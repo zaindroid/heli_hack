@@ -511,7 +511,8 @@
                     );
 
                     // Set the iframe src with the widget URL
-                    const modelId = 'production/maleAdult/male_adult_001';
+                    // Common model IDs: 'be38' (male), 'a002' (female), 'production/maleAdult/male_region_0'
+                    const modelId = 'be38';  // Simple male anatomy model
                     const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&background=1a1a2e`;
 
                     const iframe = document.getElementById('viewer-container');

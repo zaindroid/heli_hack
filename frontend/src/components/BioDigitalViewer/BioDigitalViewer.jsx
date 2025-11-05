@@ -114,7 +114,9 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
   // Get the iframe src with model and API key
   const getIframeSrc = () => {
     const apiKey = import.meta.env.VITE_BIODIGITAL_API_KEY
-    const modelId = 'production/maleAdult/male_adult_001'
+    // Using 'be38' - a common public male anatomy model
+    // You can find other model IDs at: https://human.biodigital.com/widgets/
+    const modelId = 'be38'
 
     return `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&ui-annotations=true&background=1a1a2e`
   }

@@ -44,6 +44,22 @@ Then visit: **http://localhost:5173** 🚀
 - ✅ Verify environment configuration
 - ✅ Start both services automatically
 
+### 🧪 Test BioDigital API First (Recommended)
+
+Before running the full app, test if your BioDigital API is configured correctly:
+
+```bash
+./test-biodigital.sh
+```
+
+This opens a test page that verifies:
+- ✅ Internet connectivity
+- ✅ BioDigital domain access
+- ✅ API key validation
+- ✅ 3D model loading
+
+**See [BIODIGITAL-TEST.md](BIODIGITAL-TEST.md) for detailed testing instructions.**
+
 ---
 
 ## 🌟 Features

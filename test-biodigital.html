@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioDigital API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .test-section.testing {
+            border-color: #ffd700;
+            background: #fffbea;
+        }
+
+        .test-section.success {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .test-section.error {
+            border-color: #f44336;
+            background: #fff1f0;
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .test-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .test-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .test-status {
+            margin-left: auto;
+            font-size: 2em;
+        }
+
+        .test-body {
+            margin-left: 55px;
+        }
+
+        .test-description {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .test-result.info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .test-result.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .test-result.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #viewer-container {
+            width: 100%;
+            height: 500px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .summary h2 {
+            margin-bottom: 10px;
+        }
+
+        .summary-status {
+            font-size: 3em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 BioDigital API Test Suite</h1>
+            <p>Verify your BioDigital Human API configuration</p>
+        </div>
+
+        <div class="content">
+            <!-- API Key Input -->
+            <div class="input-group">
+                <label for="apiKey">BioDigital API Key:</label>
+                <input
+                    type="text"
+                    id="apiKey"
+                    placeholder="Enter your BioDigital API key here"
+                    value="c0c3685a4e0996e0095ae1a7d7cb46079b9db70a"
+                >
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    Get your API key from <a href="https://human.biodigital.com/developers" target="_blank">BioDigital Developers</a>
+                </small>
+            </div>
+
+            <button class="button" onclick="runTests()">▶ Run Tests</button>
+
+            <!-- Test 1: Internet Connection -->
+            <div class="test-section" id="test1">
+                <div class="test-header">
+                    <div class="test-number">1</div>
+                    <div class="test-title">Internet Connection</div>
+                    <div class="test-status" id="test1-status">⏳</div>
+                </div>
+                <div class="test-body">
+                    <div class="test-description">
+                        Checking if you can reach the internet...
+                    </div>
+                    <div class="test-result info" id="test1-result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Test 2: BioDigital Domain Access -->
+            <div class="test-section" id="test2">
+                <div class="test-header">
+                    <div class="test-number">2</div>
+                    <div class="test-title">BioDigital Domain Access</div>
+                    <div class="test-status" id="test2-status">⏳</div>
+                </div>
+                <div class="test-body">
+                    <div class="test-description">
+                        Checking if you can access https://human.biodigital.com...
+                    </div>
+                    <div class="test-result info" id="test2-result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Test 3: Script Loading -->
+            <div class="test-section" id="test3">
+                <div class="test-header">
+                    <div class="test-number">3</div>
+                    <div class="test-title">HumanAPI Script Loading</div>
+                    <div class="test-status" id="test3-status">⏳</div>
+                </div>
+                <div class="test-body">
+                    <div class="test-description">
+                        Loading the BioDigital Human API JavaScript library...
+                    </div>
+                    <div class="test-result info" id="test3-result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Test 4: API Key Validation -->
+            <div class="test-section" id="test4">
+                <div class="test-header">
+                    <div class="test-number">4</div>
+                    <div class="test-title">API Key Validation</div>
+                    <div class="test-status" id="test4-status">⏳</div>
+                </div>
+                <div class="test-body">
+                    <div class="test-description">
+                        Validating your API key by attempting to initialize the viewer...
+                    </div>
+                    <div class="test-result info" id="test4-result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Test 5: 3D Model Loading -->
+            <div class="test-section" id="test5">
+                <div class="test-header">
+                    <div class="test-number">5</div>
+                    <div class="test-title">3D Model Loading</div>
+                    <div class="test-status" id="test5-status">⏳</div>
+                </div>
+                <div class="test-body">
+                    <div class="test-description">
+                        Loading a default 3D human anatomy model...
+                    </div>
+                    <div class="test-result info" id="test5-result" style="display: none;"></div>
+                    <div id="viewer-container"></div>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="summary" id="summary" style="display: none;">
+                <h2>Test Results</h2>
+                <div class="summary-status" id="summary-status"></div>
+                <p id="summary-text"></p>
+            </div>
+        </div>
+
+        <div class="footer">
+            HealthChat AI - BioDigital API Testing Tool
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            test1: false,
+            test2: false,
+            test3: false,
+            test4: false,
+            test5: false
+        };
+
+        function updateTestStatus(testId, status, message, resultClass = 'info') {
+            const section = document.getElementById(testId);
+            const statusEl = document.getElementById(`${testId}-status`);
+            const resultEl = document.getElementById(`${testId}-result`);
+
+            section.className = 'test-section ' + status;
+
+            if (status === 'testing') {
+                statusEl.innerHTML = '<span class="spinner"></span>';
+            } else if (status === 'success') {
+                statusEl.textContent = '✅';
+                testResults[testId] = true;
+            } else if (status === 'error') {
+                statusEl.textContent = '❌';
+                testResults[testId] = false;
+            }
+
+            resultEl.textContent = message;
+            resultEl.className = 'test-result ' + resultClass;
+            resultEl.style.display = 'block';
+        }
+
+        async function test1_InternetConnection() {
+            updateTestStatus('test1', 'testing', 'Testing internet connection...');
+
+            try {
+                const response = await fetch('https://www.google.com/favicon.ico', {
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+
+                updateTestStatus('test1', 'success',
+                    '✓ Internet connection is working!',
+                    'success'
+                );
+                return true;
+            } catch (error) {
+                updateTestStatus('test1', 'error',
+                    `✗ No internet connection detected.\nError: ${error.message}\n\nPlease check your network connection.`,
+                    'error'
+                );
+                return false;
+            }
+        }
+
+        async function test2_BioDigitalAccess() {
+            updateTestStatus('test2', 'testing', 'Checking access to BioDigital domain...');
+
+            try {
+                // Try to fetch an image from BioDigital domain
+                const response = await fetch('https://human.biodigital.com/favicon.ico', {
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+
+                updateTestStatus('test2', 'success',
+                    '✓ Can access human.biodigital.com successfully!',
+                    'success'
+                );
+                return true;
+            } catch (error) {
+                updateTestStatus('test2', 'error',
+                    `✗ Cannot access human.biodigital.com\nError: ${error.message}\n\nPossible causes:\n- Firewall blocking the domain\n- VPN/Proxy issues\n- DNS resolution problems\n\nTry accessing https://human.biodigital.com in your browser.`,
+                    'error'
+                );
+                return false;
+            }
+        }
+
+        async function test3_LoadScript() {
+            updateTestStatus('test3', 'testing', 'Loading HumanAPI script...');
+
+            return new Promise((resolve) => {
+                // Check if already loaded
+                if (window.HumanAPI) {
+                    updateTestStatus('test3', 'success',
+                        '✓ HumanAPI script is already loaded!\nwindow.HumanAPI is available.',
+                        'success'
+                    );
+                    resolve(true);
+                    return;
+                }
+
+                // Load the script
+                const script = document.createElement('script');
+                script.src = 'https://human.biodigital.com/builds/api/2/human-api.min.js';
+
+                let timeoutId = setTimeout(() => {
+                    updateTestStatus('test3', 'error',
+                        '✗ Script loading timed out after 15 seconds.\n\nPossible causes:\n- Slow internet connection\n- Script URL is blocked\n- BioDigital service is down\n\nTry opening https://human.biodigital.com/builds/api/2/human-api.min.js directly in your browser.',
+                        'error'
+                    );
+                    resolve(false);
+                }, 15000);
+
+                script.onload = () => {
+                    clearTimeout(timeoutId);
+                    if (window.HumanAPI) {
+                        updateTestStatus('test3', 'success',
+                            '✓ HumanAPI script loaded successfully!\nwindow.HumanAPI is now available.\nAPI Version: ' + (window.HumanAPI.version || 'Unknown'),
+                            'success'
+                        );
+                        resolve(true);
+                    } else {
+                        updateTestStatus('test3', 'error',
+                            '✗ Script loaded but window.HumanAPI is not defined.\nThis is unexpected. The BioDigital API may have changed.',
+                            'error'
+                        );
+                        resolve(false);
+                    }
+                };
+
+                script.onerror = () => {
+                    clearTimeout(timeoutId);
+                    updateTestStatus('test3', 'error',
+                        '✗ Failed to load HumanAPI script.\n\nThe script at:\nhttps://human.biodigital.com/builds/api/2/human-api.min.js\n\ncould not be loaded.\n\nCheck:\n1. Your internet connection\n2. Browser console for CORS errors\n3. If the URL is accessible',
+                        'error'
+                    );
+                    resolve(false);
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        async function test4_ValidateAPIKey() {
+            updateTestStatus('test4', 'testing', 'Validating API key...');
+
+            const apiKey = document.getElementById('apiKey').value.trim();
+
+            if (!apiKey) {
+                updateTestStatus('test4', 'error',
+                    '✗ No API key provided.\n\nPlease enter your BioDigital API key in the input field above.',
+                    'error'
+                );
+                return false;
+            }
+
+            if (!window.HumanAPI) {
+                updateTestStatus('test4', 'error',
+                    '✗ Cannot validate API key because HumanAPI is not loaded.\nPrevious test must pass first.',
+                    'error'
+                );
+                return false;
+            }
+
+            return new Promise((resolve) => {
+                try {
+                    updateTestStatus('test4', 'testing',
+                        `Attempting to initialize viewer with API key:\n${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 10)}\n\nThis may take a few seconds...`
+                    );
+
+                    const human = new window.HumanAPI({
+                        containerId: 'viewer-container',
+                        key: apiKey,
+                        modelId: 'production/maleAdult/male_adult_001',
+                        background: '#1a1a2e',
+                        ui: {
+                            info: false,
+                            help: false,
+                            fullscreen: true,
+                            zoom: true,
+                        },
+                    });
+
+                    let resolved = false;
+
+                    human.on('human.ready', () => {
+                        if (!resolved) {
+                            resolved = true;
+                            updateTestStatus('test4', 'success',
+                                '✓ API key is VALID!\nSuccessfully initialized BioDigital Human viewer.\nKey: ' + apiKey.substring(0, 10) + '...',
+                                'success'
+                            );
+                            resolve(true);
+                        }
+                    });
+
+                    human.on('error', (err) => {
+                        if (!resolved) {
+                            resolved = true;
+                            const errorMsg = err.message || err.toString();
+
+                            if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+                                updateTestStatus('test4', 'error',
+                                    '✗ API KEY IS INVALID!\n\nHTTP 401 Unauthorized\n\nYour API key is incorrect or expired.\n\nPlease:\n1. Check your API key at https://human.biodigital.com/developers\n2. Make sure you copied the entire key\n3. Try generating a new key',
+                                    'error'
+                                );
+                            } else {
+                                updateTestStatus('test4', 'error',
+                                    `✗ Error during initialization:\n${errorMsg}\n\nThis doesn't necessarily mean your key is invalid.\nCheck the browser console for more details.`,
+                                    'error'
+                                );
+                            }
+                            resolve(false);
+                        }
+                    });
+
+                    // Timeout after 30 seconds
+                    setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            updateTestStatus('test4', 'error',
+                                '✗ Initialization timed out after 30 seconds.\n\nPossible causes:\n- Very slow internet connection\n- API server is slow to respond\n- Network issues\n\nTry again or check your connection.',
+                                'error'
+                            );
+                            resolve(false);
+                        }
+                    }, 30000);
+
+                } catch (error) {
+                    updateTestStatus('test4', 'error',
+                        `✗ Exception while initializing:\n${error.message}\n\nStack trace:\n${error.stack}`,
+                        'error'
+                    );
+                    resolve(false);
+                }
+            });
+        }
+
+        async function test5_LoadModel() {
+            updateTestStatus('test5', 'testing', 'Waiting for 3D model to fully load...');
+
+            // If test4 passed, the model is already loading
+            if (testResults.test4) {
+                setTimeout(() => {
+                    updateTestStatus('test5', 'success',
+                        '✓ 3D Model loaded successfully!\n\nYou should see a 3D human anatomy model above.\nYou can rotate, zoom, and interact with it.\n\nEverything is working perfectly! 🎉',
+                        'success'
+                    );
+                }, 2000);
+                return true;
+            } else {
+                updateTestStatus('test5', 'error',
+                    '✗ Cannot load model because API key validation failed.\nFix previous tests first.',
+                    'error'
+                );
+                return false;
+            }
+        }
+
+        async function runTests() {
+            // Reset
+            testResults = { test1: false, test2: false, test3: false, test4: false, test5: false };
+            document.getElementById('summary').style.display = 'none';
+
+            // Run tests sequentially
+            const test1 = await test1_InternetConnection();
+            if (!test1) {
+                showSummary();
+                return;
+            }
+
+            const test2 = await test2_BioDigitalAccess();
+            if (!test2) {
+                showSummary();
+                return;
+            }
+
+            const test3 = await test3_LoadScript();
+            if (!test3) {
+                showSummary();
+                return;
+            }
+
+            const test4 = await test4_ValidateAPIKey();
+            if (!test4) {
+                showSummary();
+                return;
+            }
+
+            const test5 = await test5_LoadModel();
+            showSummary();
+        }
+
+        function showSummary() {
+            const summary = document.getElementById('summary');
+            const summaryStatus = document.getElementById('summary-status');
+            const summaryText = document.getElementById('summary-text');
+
+            const allPassed = Object.values(testResults).every(result => result === true);
+            const passedCount = Object.values(testResults).filter(result => result === true).length;
+
+            summary.style.display = 'block';
+
+            if (allPassed) {
+                summaryStatus.textContent = '🎉';
+                summaryText.innerHTML = `<strong>All tests passed!</strong><br>Your BioDigital API is configured correctly and working perfectly.<br>You can now use HealthChat AI with 3D anatomy visualization!`;
+            } else {
+                summaryStatus.textContent = '⚠️';
+                summaryText.innerHTML = `<strong>${passedCount}/5 tests passed</strong><br>Please fix the failed tests above before using HealthChat AI.<br>The error messages provide specific solutions for each issue.`;
+            }
+
+            summary.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('BioDigital API Test Suite loaded');
+                console.log('Click "Run Tests" to start testing');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

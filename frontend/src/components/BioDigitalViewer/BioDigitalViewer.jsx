@@ -111,14 +111,15 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
     }
   }, [humanRef.current])
 
-  // Get the iframe src with model and API key
+  // Get the iframe src with model and user account authentication
   const getIframeSrc = () => {
-    const apiKey = import.meta.env.VITE_BIODIGITAL_API_KEY
-    // Using 'be38' - a common public male anatomy model
-    // You can find other model IDs at: https://human.biodigital.com/widgets/
-    const modelId = 'be38'
+    // Using viewer format from user's BioDigital library (not widget format)
+    const modelId = '6cr6'  // User's model from their library
+    const uaid = 'ML2bh'    // User account ID
+    const paid = 'o_22e32b94'  // Partner account ID
 
-    return `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&ui-annotations=true&background=1a1a2e`
+    // Use /viewer/ endpoint with id parameter (not /widget/ with m parameter)
+    return `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-anatomy-descriptions=true&ui-anatomy-labels=true&ui-info=true&ui-label-list=true&ui-layers=true&ui-skin-layers=true&ui-menu=true&ui-nav=true&ui-search=true&ui-tools=true&ui-undo=true&initial.none=true&disable-scroll=false`
   }
 
   return (

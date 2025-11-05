@@ -511,9 +511,13 @@
                     );
 
                     // Set the iframe src with the widget URL
-                    // Common model IDs: 'be38' (male), 'a002' (female), 'production/maleAdult/male_region_0'
-                    const modelId = 'be38';  // Simple male anatomy model
-                    const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&background=1a1a2e`;
+                    // Using viewer format from user's library (not widget format)
+                    const modelId = '6cr6';  // User's model from their library
+                    const uaid = 'ML2bh';    // User account ID
+                    const paid = 'o_22e32b94';  // Partner account ID
+
+                    // Use /viewer/ endpoint with id parameter (not /widget/ with m parameter)
+                    const iframeSrc = `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&initial.none=true`;
 
                     const iframe = document.getElementById('viewer-container');
 

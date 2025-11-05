@@ -67,6 +67,73 @@ fi
 
 echo ""
 
+# Step 1.5: Install System Dependencies (for WSL/Ubuntu/Debian)
+if [ -f /etc/debian_version ] || grep -qi microsoft /proc/version; then
+    echo "Step 1.5: Installing system dependencies for WSL/Ubuntu..."
+    echo ""
+
+    print_status "Detected Debian-based system (Ubuntu/WSL)"
+
+    # Check if running as root or with sudo
+    if [ "$EUID" -ne 0 ]; then
+        print_warning "Some system dependencies require sudo access"
+        echo "Please enter your password if prompted..."
+        echo ""
+
+        # Install dependencies
+        sudo apt-get update -qq
+        sudo apt-get install -y \
+            python3-dev \
+            python3-pip \
+            build-essential \
+            libjpeg-dev \
+            libpng-dev \
+            libtiff-dev \
+            libwebp-dev \
+            libopenjp2-7-dev \
+            zlib1g-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libxcb1-dev \
+            tesseract-ocr \
+            libgl1-mesa-glx \
+            libglib2.0-0 \
+            > /dev/null 2>&1
+
+        if [ $? -eq 0 ]; then
+            print_status "System dependencies installed successfully"
+        else
+            print_warning "Some dependencies may have failed to install, but continuing..."
+        fi
+    else
+        apt-get update -qq
+        apt-get install -y \
+            python3-dev \
+            python3-pip \
+            build-essential \
+            libjpeg-dev \
+            libpng-dev \
+            libtiff-dev \
+            libwebp-dev \
+            libopenjp2-7-dev \
+            zlib1g-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libxcb1-dev \
+            tesseract-ocr \
+            libgl1-mesa-glx \
+            libglib2.0-0 \
+            > /dev/null 2>&1
+        print_status "System dependencies installed successfully"
+    fi
+
+    echo ""
+fi
+
 # Step 2: Backend Setup
 echo "Step 2: Setting up backend..."
 echo ""

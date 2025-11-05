@@ -24,6 +24,17 @@ setup.bat
 start.bat
 ```
 
+**Windows (WSL):**
+```bash
+git clone <your-repo-url>
+cd heli_hack
+./fix-wsl.sh    # Install system dependencies first
+./setup.sh
+./start.sh
+```
+
+> **WSL Users:** See [WSL-SETUP.md](WSL-SETUP.md) for detailed WSL-specific instructions and troubleshooting.
+
 Then visit: **http://localhost:5173** 🚀
 
 ### What the scripts do:

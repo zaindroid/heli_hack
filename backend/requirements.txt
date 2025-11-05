@@ -1,21 +1,17 @@
 # FastAPI and Server
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
-python-dotenv==1.0.0
-
-# Pipecat for Voice AI Agent
-pipecat-ai==0.0.35
-pipecat-ai[websocket]==0.0.35
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
+python-dotenv==1.0.1
 
 # OpenAI and LLM
-openai==1.3.7
+openai==1.54.0
 
 # Deepgram for Speech
-deepgram-sdk==3.2.0
+deepgram-sdk==3.8.3
 
 # WebSockets
-websockets==12.0
+websockets==13.1
 
 # CORS and Security
 python-jose[cryptography]==3.3.0
@@ -23,21 +19,21 @@ passlib[bcrypt]==1.7.4
 
 # Document Processing
 pypdf2==3.0.1
-pytesseract==0.3.10
-pillow==10.1.0
-opencv-python==4.8.1.78
+pytesseract==0.3.13
+pillow==11.0.0
+opencv-python==4.10.0.84
 
 # Medical/Healthcare
-# mediapipe==0.10.8  # For video analysis
+# mediapipe==0.10.14  # For video analysis - uncomment when needed
 
 # Data Processing
-pandas==2.1.3
-numpy==1.26.2
+pandas==2.2.3
+numpy==2.1.3
 
 # HTTP Client
-httpx==0.25.2
-requests==2.31.0
+httpx==0.27.2
+requests==2.32.3
 
 # Utilities
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic==2.9.2
+pydantic-settings==2.6.1

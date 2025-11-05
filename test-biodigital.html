@@ -510,13 +510,12 @@
                         `Setting up viewer with API key...\n${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 10)}\n\nThis may take 10-20 seconds...`
                     );
 
-                    // Set the iframe src with the viewer URL (the format that works)
+                    // Set the iframe src with developer key for SDK access
                     const modelId = '6cr6';  // User's model from their library
-                    const uaid = 'ML2bh';    // User account ID
-                    const paid = 'o_22e32b94';  // Partner account ID
+                    const developerKey = apiKey;  // Use the developer key from input field
 
-                    // Use /viewer/ endpoint with id parameter and user authentication
-                    const iframeSrc = `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-info=true&ui-nav=true&ui-tools=true&ui-layers=true&initial.none=true`;
+                    // Use /widget/ endpoint with developer key (enables JavaScript SDK)
+                    const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&dk=${developerKey}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&ui-layers=true&background=1a1a2e&initial.none=true`;
 
                     const iframe = document.getElementById('viewer-container');
 

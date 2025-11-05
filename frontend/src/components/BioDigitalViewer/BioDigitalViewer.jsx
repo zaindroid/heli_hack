@@ -101,16 +101,14 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
     }
   }, [humanRef.current])
 
-  // Get the iframe src with model and user account authentication
+  // Get the iframe src with model and developer key
   const getIframeSrc = () => {
-    // Using VIEWER format with user authentication (the format that works)
+    // Use developer key for SDK access (not uaid/paid)
     const modelId = '6cr6'  // User's model from their library
-    const uaid = 'ML2bh'    // User account ID
-    const paid = 'o_22e32b94'  // Partner account ID
+    const developerKey = 'c0c3685a4e0996e0095ae1a7d7cb46079b9db70a'  // Developer key for SDK access
 
-    // Use /viewer/ endpoint with id parameter and user authentication
-    // This is the format that loads successfully in the browser
-    return `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-anatomy-descriptions=true&ui-anatomy-labels=true&ui-info=true&ui-label-list=true&ui-layers=true&ui-menu=true&ui-nav=true&ui-search=true&ui-tools=true&ui-undo=true&initial.none=true`
+    // Use /widget/ endpoint with developer key (enables JavaScript SDK)
+    return `https://human.biodigital.com/widget/?m=${modelId}&dk=${developerKey}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&ui-layers=true&ui-menu=true&ui-search=true&background=1a1a2e&initial.none=true`
   }
 
   return (

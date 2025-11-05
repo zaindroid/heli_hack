@@ -4,6 +4,37 @@
 
 HealthChat AI is an innovative healthcare application that makes medical data exploration fun and accessible through conversational AI and immersive 3D anatomy visualization powered by BioDigital Human.
 
+## ⚡ Quick Start
+
+### One-Command Setup
+
+**Linux/Mac:**
+```bash
+git clone <your-repo-url>
+cd heli_hack
+./setup.sh
+./start.sh
+```
+
+**Windows:**
+```cmd
+git clone <your-repo-url>
+cd heli_hack
+setup.bat
+start.bat
+```
+
+Then visit: **http://localhost:5173** 🚀
+
+### What the scripts do:
+- ✅ Check prerequisites (Python 3.11+, Node.js 18+)
+- ✅ Create Python virtual environment
+- ✅ Install all dependencies (backend + frontend)
+- ✅ Verify environment configuration
+- ✅ Start both services automatically
+
+---
+
 ## 🌟 Features
 
 ### Patient Mode

@@ -518,93 +518,114 @@
 
                     console.log('Setting iframe src:', iframeSrc);
 
-                    // Listen for iframe load event
+                    let resolved = false;
+
+                    // Initialize HumanAPI AFTER iframe loads
                     iframe.onload = () => {
                         console.log('✓ Iframe loaded successfully');
+
+                        // Wait a bit more for iframe content to be ready
+                        setTimeout(() => {
+                            console.log('Initializing HumanAPI with iframe ID...');
+                            console.log('Iframe element:', document.getElementById('viewer-container'));
+                            console.log('Iframe src:', document.getElementById('viewer-container').src);
+
+                            try {
+                                // Initialize using the correct method: pass iframe ID
+                                const human = new window.HumanAPI('viewer-container');
+
+                                console.log('HumanAPI instance created:', human);
+                                console.log('HumanAPI methods:', Object.keys(human));
+
+                                // Listen for ALL possible events for debugging
+                                const allEvents = ['ready', 'load', 'loaded', 'human.ready', 'timeline.playing', 'timeline.stopped'];
+                                allEvents.forEach(eventName => {
+                                    human.on(eventName, (data) => {
+                                        console.log(`🎯 Event fired: ${eventName}`, data);
+                                    });
+                                });
+
+                                // Listen for ready event (note: it's 'ready', not 'human.ready')
+                                human.on('ready', () => {
+                                    if (!resolved) {
+                                        resolved = true;
+                                        updateTestStatus('test4', 'success',
+                                            '✓ API key is VALID!\nSuccessfully initialized BioDigital Human viewer.\nKey: ' + apiKey.substring(0, 10) + '...\n\nThe viewer is now loading in Test 5 below!',
+                                            'success'
+                                        );
+                                        resolve(true);
+                                    }
+                                });
+
+                                human.on('error', (err) => {
+                                    console.error('❌ Error event fired:', err);
+                                    if (!resolved) {
+                                        resolved = true;
+                                        const errorMsg = err.message || err.toString() || JSON.stringify(err);
+
+                                        if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+                                            updateTestStatus('test4', 'error',
+                                                '✗ API KEY IS INVALID!\n\nHTTP 401 Unauthorized\n\nYour API key is incorrect or expired.\n\nPlease:\n1. Check your API key at https://human.biodigital.com/developers\n2. Make sure you copied the entire key\n3. Try generating a new key',
+                                                'error'
+                                            );
+                                        } else {
+                                            updateTestStatus('test4', 'error',
+                                                `✗ Error during initialization:\n${errorMsg}\n\nCheck the browser console for more details.`,
+                                                'error'
+                                            );
+                                        }
+                                        resolve(false);
+                                    }
+                                });
+
+                                // Timeout after 30 seconds
+                                setTimeout(() => {
+                                    if (!resolved) {
+                                        resolved = true;
+                                        updateTestStatus('test4', 'error',
+                                            '✗ Initialization timed out after 30 seconds.\n\nPossible causes:\n- Very slow internet connection\n- API server is slow to respond\n- Invalid API key (check above)\n\nCheck browser console for details.',
+                                            'error'
+                                        );
+                                        resolve(false);
+                                    }
+                                }, 30000);
+
+                            } catch (err) {
+                                updateTestStatus('test4', 'error',
+                                    `✗ Exception while initializing:\n${err.message}\n\nStack trace:\n${err.stack}`,
+                                    'error'
+                                );
+                                resolve(false);
+                            }
+                        }, 1500);
                     };
 
                     iframe.onerror = () => {
                         console.error('✗ Iframe failed to load');
-                    };
-
-                    iframe.src = iframeSrc;
-
-                    // Wait for iframe to start loading before initializing HumanAPI
-                    setTimeout(() => {
-                        console.log('Initializing HumanAPI with iframe ID...');
-                        console.log('Iframe element:', document.getElementById('viewer-container'));
-                        console.log('Iframe src:', document.getElementById('viewer-container').src);
-
-                        try {
-                            // Initialize using the correct method: pass iframe ID
-                            const human = new window.HumanAPI('viewer-container');
-
-                            console.log('HumanAPI instance created:', human);
-                            console.log('HumanAPI methods:', Object.keys(human));
-
-                            let resolved = false;
-
-                            // Listen for ALL possible events for debugging
-                            const allEvents = ['ready', 'load', 'loaded', 'human.ready', 'timeline.playing', 'timeline.stopped'];
-                            allEvents.forEach(eventName => {
-                                human.on(eventName, (data) => {
-                                    console.log(`🎯 Event fired: ${eventName}`, data);
-                                });
-                            });
-
-                            // Listen for ready event (note: it's 'ready', not 'human.ready')
-                            human.on('ready', () => {
-                                if (!resolved) {
-                                    resolved = true;
-                                    updateTestStatus('test4', 'success',
-                                        '✓ API key is VALID!\nSuccessfully initialized BioDigital Human viewer.\nKey: ' + apiKey.substring(0, 10) + '...\n\nThe viewer is now loading in Test 5 below!',
-                                        'success'
-                                    );
-                                    resolve(true);
-                                }
-                            });
-
-                            human.on('error', (err) => {
-                                console.error('❌ Error event fired:', err);
-                                if (!resolved) {
-                                    resolved = true;
-                                    const errorMsg = err.message || err.toString() || JSON.stringify(err);
-
-                                    if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-                                        updateTestStatus('test4', 'error',
-                                            '✗ API KEY IS INVALID!\n\nHTTP 401 Unauthorized\n\nYour API key is incorrect or expired.\n\nPlease:\n1. Check your API key at https://human.biodigital.com/developers\n2. Make sure you copied the entire key\n3. Try generating a new key',
-                                            'error'
-                                        );
-                                    } else {
-                                        updateTestStatus('test4', 'error',
-                                            `✗ Error during initialization:\n${errorMsg}\n\nCheck the browser console for more details.`,
-                                            'error'
-                                        );
-                                    }
-                                    resolve(false);
-                                }
-                            });
-
-                            // Timeout after 30 seconds
-                            setTimeout(() => {
-                                if (!resolved) {
-                                    resolved = true;
-                                    updateTestStatus('test4', 'error',
-                                        '✗ Initialization timed out after 30 seconds.\n\nPossible causes:\n- Very slow internet connection\n- API server is slow to respond\n- Invalid API key (check above)\n\nTry again or check your connection.',
-                                        'error'
-                                    );
-                                    resolve(false);
-                                }
-                            }, 30000);
-
-                        } catch (err) {
+                        if (!resolved) {
+                            resolved = true;
                             updateTestStatus('test4', 'error',
-                                `✗ Exception while initializing:\n${err.message}\n\nStack trace:\n${err.stack}`,
+                                '✗ Iframe failed to load.\n\nCannot load BioDigital widget iframe.\nCheck your internet connection and API key.',
                                 'error'
                             );
                             resolve(false);
                         }
-                    }, 1000);
+                    };
+
+                    // Set iframe src to trigger loading
+                    iframe.src = iframeSrc;
+
+                    // Timeout for entire test
+                    setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            updateTestStatus('test4', 'error',
+                                '✗ Overall test timed out after 35 seconds.\n\nIframe may not be loading. Check browser console.',
+                                'error'
+                            );
+                            resolve(false);
+                        }
+                    }, 35000);
 
                 } catch (error) {
                     updateTestStatus('test4', 'error',

@@ -104,11 +104,12 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
   // Get the iframe src with model and developer key
   const getIframeSrc = () => {
     // Use PUBLIC model with developer key for SDK access
-    // Model 6cr6 is private and only accessible with user auth, not developer key
-    const modelId = 'production/maleAdult/male_region_0'  // Public male anatomy model
+    // Trying simple model ID that should definitely exist
+    const modelId = 'be38'  // Common public male anatomy model
     const developerKey = 'c0c3685a4e0996e0095ae1a7d7cb46079b9db70a'  // Developer key for SDK access
 
     // Use /widget/ endpoint with developer key (enables JavaScript SDK)
+    console.log('BioDigital iframe URL:', `https://human.biodigital.com/widget/?m=${modelId}&dk=${developerKey.substring(0,10)}...`)
     return `https://human.biodigital.com/widget/?m=${modelId}&dk=${developerKey}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&ui-layers=true&ui-menu=true&ui-search=true&background=1a1a2e&initial.none=true`
   }
 

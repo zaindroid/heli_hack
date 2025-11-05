@@ -511,13 +511,13 @@
                     );
 
                     // Set the iframe src with the widget URL
-                    // Using viewer format from user's library (not widget format)
+                    // Using WIDGET format (supports HumanAPI SDK) with user auth
                     const modelId = '6cr6';  // User's model from their library
                     const uaid = 'ML2bh';    // User account ID
                     const paid = 'o_22e32b94';  // Partner account ID
 
-                    // Use /viewer/ endpoint with id parameter (not /widget/ with m parameter)
-                    const iframeSrc = `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&initial.none=true`;
+                    // Use /widget/ endpoint (supports JavaScript SDK) with user authentication
+                    const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&uaid=${uaid}&paid=${paid}&ui-info=true&ui-zoom=true&ui-nav=true&ui-tools=true&background=1a1a2e`;
 
                     const iframe = document.getElementById('viewer-container');
 

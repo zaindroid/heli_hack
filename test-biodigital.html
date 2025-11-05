@@ -511,7 +511,8 @@
                     );
 
                     // Set the iframe src with developer key for SDK access
-                    const modelId = '6cr6';  // User's model from their library
+                    // Use PUBLIC model - private models (like 6cr6) only work with user auth, not developer key
+                    const modelId = 'production/maleAdult/male_region_0';  // Public male anatomy model
                     const developerKey = apiKey;  // Use the developer key from input field
 
                     // Use /widget/ endpoint with developer key (enables JavaScript SDK)

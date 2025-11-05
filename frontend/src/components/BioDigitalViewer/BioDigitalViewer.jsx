@@ -103,8 +103,9 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
 
   // Get the iframe src with model and developer key
   const getIframeSrc = () => {
-    // Use developer key for SDK access (not uaid/paid)
-    const modelId = '6cr6'  // User's model from their library
+    // Use PUBLIC model with developer key for SDK access
+    // Model 6cr6 is private and only accessible with user auth, not developer key
+    const modelId = 'production/maleAdult/male_region_0'  // Public male anatomy model
     const developerKey = 'c0c3685a4e0996e0095ae1a7d7cb46079b9db70a'  // Developer key for SDK access
 
     // Use /widget/ endpoint with developer key (enables JavaScript SDK)

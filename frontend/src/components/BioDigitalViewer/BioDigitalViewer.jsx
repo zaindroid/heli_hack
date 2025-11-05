@@ -23,7 +23,7 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
         // Timeout after 10 seconds
         setTimeout(() => {
           clearInterval(checkHumanAPI)
-          if (!window.HumanAPI || !window.HumanAPI.Human) {
+          if (!window.HumanAPI) {
             setError('BioDigital Human API script failed to load')
             setIsLoading(false)
             setDebugInfo('Make sure you have internet connection and the script can load')
@@ -38,25 +38,15 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
 
   const initializeBioDigital = () => {
     try {
-      const apiKey = import.meta.env.VITE_BIODIGITAL_API_KEY
-
       console.log('Initializing BioDigital Human...')
-      console.log('API Key present:', !!apiKey)
-
-      if (!apiKey || apiKey === 'your_biodigital_key_here') {
-        setError('BioDigital API key not configured')
-        setIsLoading(false)
-        setDebugInfo('Please update VITE_BIODIGITAL_API_KEY in frontend/.env file')
-        console.error('BioDigital API key missing or not configured')
-        return
-      }
+      console.log('Using user account authentication (uaid/paid)')
 
       // Check if HumanAPI is available
-      if (!window.HumanAPI || !window.HumanAPI.Human) {
+      if (!window.HumanAPI) {
         setError('BioDigital Human API not loaded')
         setIsLoading(false)
-        setDebugInfo('HumanAPI.Human constructor not found. Check if script loaded correctly.')
-        console.error('window.HumanAPI.Human is not defined')
+        setDebugInfo('HumanAPI constructor not found. Check if script loaded correctly.')
+        console.error('window.HumanAPI is not defined')
         return
       }
 

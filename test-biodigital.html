@@ -512,20 +512,44 @@
                     // Set the iframe src with the widget URL
                     const modelId = 'production/maleAdult/male_adult_001';
                     const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&background=1a1a2e`;
-                    
-                    document.getElementById('viewer-container').src = iframeSrc;
 
-                    // Wait a moment for iframe to load
+                    const iframe = document.getElementById('viewer-container');
+
+                    console.log('Setting iframe src:', iframeSrc);
+
+                    // Listen for iframe load event
+                    iframe.onload = () => {
+                        console.log('✓ Iframe loaded successfully');
+                    };
+
+                    iframe.onerror = () => {
+                        console.error('✗ Iframe failed to load');
+                    };
+
+                    iframe.src = iframeSrc;
+
+                    // Wait for iframe to start loading before initializing HumanAPI
                     setTimeout(() => {
                         console.log('Initializing HumanAPI with iframe ID...');
+                        console.log('Iframe element:', document.getElementById('viewer-container'));
+                        console.log('Iframe src:', document.getElementById('viewer-container').src);
 
                         try {
                             // Initialize using the correct method: pass iframe ID
                             const human = new window.HumanAPI('viewer-container');
 
                             console.log('HumanAPI instance created:', human);
+                            console.log('HumanAPI methods:', Object.keys(human));
 
                             let resolved = false;
+
+                            // Listen for ALL possible events for debugging
+                            const allEvents = ['ready', 'load', 'loaded', 'human.ready', 'timeline.playing', 'timeline.stopped'];
+                            allEvents.forEach(eventName => {
+                                human.on(eventName, (data) => {
+                                    console.log(`🎯 Event fired: ${eventName}`, data);
+                                });
+                            });
 
                             // Listen for ready event (note: it's 'ready', not 'human.ready')
                             human.on('ready', () => {
@@ -540,9 +564,10 @@
                             });
 
                             human.on('error', (err) => {
+                                console.error('❌ Error event fired:', err);
                                 if (!resolved) {
                                     resolved = true;
-                                    const errorMsg = err.message || err.toString();
+                                    const errorMsg = err.message || err.toString() || JSON.stringify(err);
 
                                     if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
                                         updateTestStatus('test4', 'error',

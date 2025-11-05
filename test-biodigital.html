@@ -442,11 +442,11 @@
 
                 // Load the script
                 const script = document.createElement('script');
-                script.src = 'https://human-api.biodigital.com/build/1.2.1/human-api-1.2.1.min.js';
+                script.src = 'https://developer.biodigital.com/builds/api/human-api-3.0.0.min.js';
 
                 let timeoutId = setTimeout(() => {
                     updateTestStatus('test3', 'error',
-                        '✗ Script loading timed out after 15 seconds.\n\nPossible causes:\n- Slow internet connection\n- Script URL is blocked\n- BioDigital service is down\n\nTry opening https://human-api.biodigital.com/build/1.2.1/human-api-1.2.1.min.js directly in your browser.',
+                        '✗ Script loading timed out after 15 seconds.\n\nPossible causes:\n- Slow internet connection\n- Script URL is blocked\n- BioDigital service is down\n\nTry opening https://developer.biodigital.com/builds/api/human-api-3.0.0.min.js directly in your browser.',
                         'error'
                     );
                     resolve(false);
@@ -472,7 +472,7 @@
                 script.onerror = () => {
                     clearTimeout(timeoutId);
                     updateTestStatus('test3', 'error',
-                        '✗ Failed to load HumanAPI script.\n\nThe script at:\nhttps://human-api.biodigital.com/build/1.2.1/human-api-1.2.1.min.js\n\ncould not be loaded.\n\nCheck:\n1. Your internet connection\n2. Browser console for CORS errors\n3. If the URL is accessible',
+                        '✗ Failed to load HumanAPI script.\n\nThe script at:\nhttps://developer.biodigital.com/builds/api/human-api-3.0.0.min.js\n\ncould not be loaded.\n\nCheck:\n1. Your internet connection\n2. Browser console for CORS errors\n3. If the URL is accessible',
                         'error'
                     );
                     resolve(false);
@@ -495,9 +495,9 @@
                 return false;
             }
 
-            if (!window.HumanAPI || !window.HumanAPI.Human) {
+            if (!window.HumanAPI) {
                 updateTestStatus('test4', 'error',
-                    '✗ Cannot validate API key because HumanAPI.Human is not available.\nPrevious test must pass first.\n\nAvailable: ' + Object.keys(window).filter(k => k.toLowerCase().includes('human')).join(', '),
+                    '✗ Cannot validate API key because HumanAPI is not available.\nPrevious test must pass first.\n\nAvailable: ' + Object.keys(window).filter(k => k.toLowerCase().includes('human')).join(', '),
                     'error'
                 );
                 return false;
@@ -517,13 +517,13 @@
 
                     // Wait a moment for iframe to load
                     setTimeout(() => {
-                        console.log('Initializing HumanAPI.Human with iframe ID...');
-                        
+                        console.log('Initializing HumanAPI with iframe ID...');
+
                         try {
                             // Initialize using the correct method: pass iframe ID
-                            const human = new window.HumanAPI.Human('viewer-container');
-                            
-                            console.log('HumanAPI.Human instance created:', human);
+                            const human = new window.HumanAPI('viewer-container');
+
+                            console.log('HumanAPI instance created:', human);
 
                             let resolved = false;
 

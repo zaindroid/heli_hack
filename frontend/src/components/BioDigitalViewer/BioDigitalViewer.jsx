@@ -9,12 +9,12 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
   useEffect(() => {
     // Wait for HumanAPI script to load
     const checkAndInitialize = () => {
-      if (window.HumanAPI && window.HumanAPI.Human) {
+      if (window.HumanAPI) {
         initializeBioDigital()
       } else {
         // Wait for script to load
         const checkHumanAPI = setInterval(() => {
-          if (window.HumanAPI && window.HumanAPI.Human) {
+          if (window.HumanAPI) {
             clearInterval(checkHumanAPI)
             initializeBioDigital()
           }
@@ -63,7 +63,7 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
       console.log('Creating HumanAPI.Human instance...')
 
       // Initialize using the correct method: pass iframe ID
-      const human = new window.HumanAPI.Human('biodigital-iframe')
+      const human = new window.HumanAPI('biodigital-iframe')
 
       console.log('HumanAPI.Human instance created:', human)
 

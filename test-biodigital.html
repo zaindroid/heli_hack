@@ -431,7 +431,7 @@
 
             return new Promise((resolve) => {
                 // Check if already loaded
-                if (window.HumanAPI) {
+                if (window.Human || window.HumanAPI) {
                     updateTestStatus('test3', 'success',
                         '✓ HumanAPI script is already loaded!\nwindow.HumanAPI is available.',
                         'success'
@@ -454,7 +454,7 @@
 
                 script.onload = () => {
                     clearTimeout(timeoutId);
-                    if (window.HumanAPI) {
+                    if (window.Human || window.HumanAPI) {
                         updateTestStatus('test3', 'success',
                             '✓ HumanAPI script loaded successfully!\nwindow.HumanAPI is now available.\nAPI Version: ' + (window.HumanAPI.version || 'Unknown'),
                             'success'
@@ -509,7 +509,21 @@
                         `Attempting to initialize viewer with API key:\n${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 10)}\n\nThis may take a few seconds...`
                     );
 
-                    const human = new window.HumanAPI({
+                    // Try both window.Human and window.HumanAPI
+                    let HumanConstructor = window.Human || window.HumanAPI;
+                    
+                    if (!HumanConstructor) {
+                        updateTestStatus("test4", "error",
+                            "✗ Neither window.Human nor window.HumanAPI found!\n\nAvailable: " + Object.keys(window).filter(k => k.toLowerCase().includes("human")).join(", "),
+                            "error"
+                        );
+                        resolve(false);
+                        return;
+    }
+
+                    console.log("Using constructor:", HumanConstructor.name || "Unknown");
+                    
+                    const human = new HumanConstructor({
                         containerId: 'viewer-container',
                         key: apiKey,
                         modelId: 'production/maleAdult/male_adult_001',

@@ -9,12 +9,12 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
 
   useEffect(() => {
     // Wait for HumanAPI script to load
-    if (window.HumanAPI) {
+    if (window.Human || window.HumanAPI) {
       initializeBioDigital()
     } else {
       // Wait for script to load
       const checkHumanAPI = setInterval(() => {
-        if (window.HumanAPI) {
+        if (window.Human || window.HumanAPI) {
           clearInterval(checkHumanAPI)
           initializeBioDigital()
         }
@@ -60,7 +60,20 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
       console.log('Creating HumanAPI instance...')
 
       // Initialize BioDigital Human with proper configuration
-      const human = new window.HumanAPI({
+      // Try both window.Human and window.HumanAPI
+      const HumanConstructor = window.Human || window.HumanAPI
+      
+      if (!HumanConstructor) {
+        setError("BioDigital Human API not available")
+        setIsLoading(false)
+        setDebugInfo("Neither window.Human nor window.HumanAPI found after script loaded")
+        console.error("No Human constructor found")
+        return
+      }
+      
+      console.log("Using constructor:", HumanConstructor.name || "Unknown")
+      
+      const human = new HumanConstructor({
         containerId: 'biodigital-iframe',
         key: apiKey,
         // Use a default model to ensure something loads

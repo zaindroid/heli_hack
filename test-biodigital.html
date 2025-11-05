@@ -331,7 +331,7 @@
                         Loading a default 3D human anatomy model...
                     </div>
                     <div class="test-result info" id="test5-result" style="display: none;"></div>
-                    <div id="viewer-container"></div>
+                    <iframe id="viewer-container" src="" width="100%" height="100%" style="border: none; background: #1a1a2e;"></iframe>
                 </div>
             </div>
 
@@ -495,9 +495,9 @@
                 return false;
             }
 
-            if (!window.HumanAPI) {
+            if (!window.HumanAPI || !window.HumanAPI.Human) {
                 updateTestStatus('test4', 'error',
-                    '✗ Cannot validate API key because HumanAPI is not loaded.\nPrevious test must pass first.',
+                    '✗ Cannot validate API key because HumanAPI.Human is not available.\nPrevious test must pass first.\n\nAvailable: ' + Object.keys(window).filter(k => k.toLowerCase().includes('human')).join(', '),
                     'error'
                 );
                 return false;
@@ -506,91 +506,89 @@
             return new Promise((resolve) => {
                 try {
                     updateTestStatus('test4', 'testing',
-                        `Attempting to initialize viewer with API key:\n${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 10)}\n\nThis may take a few seconds...`
+                        `Setting up viewer with API key...\n${apiKey.substring(0, 10)}...${apiKey.substring(apiKey.length - 10)}\n\nThis may take 10-20 seconds...`
                     );
 
-                    // Try both window.Human and window.HumanAPI
-                    let HumanConstructor = window.Human || window.HumanAPI;
+                    // Set the iframe src with the widget URL
+                    const modelId = 'production/maleAdult/male_adult_001';
+                    const iframeSrc = `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&background=1a1a2e`;
                     
-                    if (!HumanConstructor) {
-                        updateTestStatus("test4", "error",
-                            "✗ Neither window.Human nor window.HumanAPI found!\n\nAvailable: " + Object.keys(window).filter(k => k.toLowerCase().includes("human")).join(", "),
-                            "error"
-                        );
-                        resolve(false);
-                        return;
-    }
+                    document.getElementById('viewer-container').src = iframeSrc;
 
-                    console.log("Using constructor:", HumanConstructor.name || "Unknown");
-                    
-                    const human = new HumanConstructor({
-                        containerId: 'viewer-container',
-                        key: apiKey,
-                        modelId: 'production/maleAdult/male_adult_001',
-                        background: '#1a1a2e',
-                        ui: {
-                            info: false,
-                            help: false,
-                            fullscreen: true,
-                            zoom: true,
-                        },
-                    });
-
-                    let resolved = false;
-
-                    human.on('human.ready', () => {
-                        if (!resolved) {
-                            resolved = true;
-                            updateTestStatus('test4', 'success',
-                                '✓ API key is VALID!\nSuccessfully initialized BioDigital Human viewer.\nKey: ' + apiKey.substring(0, 10) + '...',
-                                'success'
-                            );
-                            resolve(true);
-                        }
-                    });
-
-                    human.on('error', (err) => {
-                        if (!resolved) {
-                            resolved = true;
-                            const errorMsg = err.message || err.toString();
-
-                            if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-                                updateTestStatus('test4', 'error',
-                                    '✗ API KEY IS INVALID!\n\nHTTP 401 Unauthorized\n\nYour API key is incorrect or expired.\n\nPlease:\n1. Check your API key at https://human.biodigital.com/developers\n2. Make sure you copied the entire key\n3. Try generating a new key',
-                                    'error'
-                                );
-                            } else {
-                                updateTestStatus('test4', 'error',
-                                    `✗ Error during initialization:\n${errorMsg}\n\nThis doesn't necessarily mean your key is invalid.\nCheck the browser console for more details.`,
-                                    'error'
-                                );
-                            }
-                            resolve(false);
-                        }
-                    });
-
-                    // Timeout after 30 seconds
+                    // Wait a moment for iframe to load
                     setTimeout(() => {
-                        if (!resolved) {
-                            resolved = true;
+                        console.log('Initializing HumanAPI.Human with iframe ID...');
+                        
+                        try {
+                            // Initialize using the correct method: pass iframe ID
+                            const human = new window.HumanAPI.Human('viewer-container');
+                            
+                            console.log('HumanAPI.Human instance created:', human);
+
+                            let resolved = false;
+
+                            // Listen for ready event (note: it's 'ready', not 'human.ready')
+                            human.on('ready', () => {
+                                if (!resolved) {
+                                    resolved = true;
+                                    updateTestStatus('test4', 'success',
+                                        '✓ API key is VALID!\nSuccessfully initialized BioDigital Human viewer.\nKey: ' + apiKey.substring(0, 10) + '...\n\nThe viewer is now loading in Test 5 below!',
+                                        'success'
+                                    );
+                                    resolve(true);
+                                }
+                            });
+
+                            human.on('error', (err) => {
+                                if (!resolved) {
+                                    resolved = true;
+                                    const errorMsg = err.message || err.toString();
+
+                                    if (err.code === 401 || errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+                                        updateTestStatus('test4', 'error',
+                                            '✗ API KEY IS INVALID!\n\nHTTP 401 Unauthorized\n\nYour API key is incorrect or expired.\n\nPlease:\n1. Check your API key at https://human.biodigital.com/developers\n2. Make sure you copied the entire key\n3. Try generating a new key',
+                                            'error'
+                                        );
+                                    } else {
+                                        updateTestStatus('test4', 'error',
+                                            `✗ Error during initialization:\n${errorMsg}\n\nCheck the browser console for more details.`,
+                                            'error'
+                                        );
+                                    }
+                                    resolve(false);
+                                }
+                            });
+
+                            // Timeout after 30 seconds
+                            setTimeout(() => {
+                                if (!resolved) {
+                                    resolved = true;
+                                    updateTestStatus('test4', 'error',
+                                        '✗ Initialization timed out after 30 seconds.\n\nPossible causes:\n- Very slow internet connection\n- API server is slow to respond\n- Invalid API key (check above)\n\nTry again or check your connection.',
+                                        'error'
+                                    );
+                                    resolve(false);
+                                }
+                            }, 30000);
+
+                        } catch (err) {
                             updateTestStatus('test4', 'error',
-                                '✗ Initialization timed out after 30 seconds.\n\nPossible causes:\n- Very slow internet connection\n- API server is slow to respond\n- Network issues\n\nTry again or check your connection.',
+                                `✗ Exception while initializing:\n${err.message}\n\nStack trace:\n${err.stack}`,
                                 'error'
                             );
                             resolve(false);
                         }
-                    }, 30000);
+                    }, 1000);
 
                 } catch (error) {
                     updateTestStatus('test4', 'error',
-                        `✗ Exception while initializing:\n${error.message}\n\nStack trace:\n${error.stack}`,
+                        `✗ Exception:\n${error.message}\n\nStack trace:\n${error.stack}`,
                         'error'
                     );
                     resolve(false);
                 }
             });
         }
-
         async function test5_LoadModel() {
             updateTestStatus('test5', 'testing', 'Waiting for 3D model to fully load...');
 

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
 function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
-  const iframeRef = useRef(null)
   const humanRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -9,27 +8,32 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
 
   useEffect(() => {
     // Wait for HumanAPI script to load
-    if (window.Human || window.HumanAPI) {
-      initializeBioDigital()
-    } else {
-      // Wait for script to load
-      const checkHumanAPI = setInterval(() => {
-        if (window.Human || window.HumanAPI) {
-          clearInterval(checkHumanAPI)
-          initializeBioDigital()
-        }
-      }, 100)
+    const checkAndInitialize = () => {
+      if (window.HumanAPI && window.HumanAPI.Human) {
+        initializeBioDigital()
+      } else {
+        // Wait for script to load
+        const checkHumanAPI = setInterval(() => {
+          if (window.HumanAPI && window.HumanAPI.Human) {
+            clearInterval(checkHumanAPI)
+            initializeBioDigital()
+          }
+        }, 100)
 
-      // Timeout after 10 seconds
-      setTimeout(() => {
-        clearInterval(checkHumanAPI)
-        if (!window.HumanAPI) {
-          setError('BioDigital Human API script failed to load')
-          setIsLoading(false)
-          setDebugInfo('Make sure you have internet connection and the script can load from https://human.biodigital.com')
-        }
-      }, 10000)
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkHumanAPI)
+          if (!window.HumanAPI || !window.HumanAPI.Human) {
+            setError('BioDigital Human API script failed to load')
+            setIsLoading(false)
+            setDebugInfo('Make sure you have internet connection and the script can load')
+          }
+        }, 10000)
+      }
     }
+
+    // Small delay to ensure iframe is rendered
+    setTimeout(checkAndInitialize, 500)
   }, [])
 
   const initializeBioDigital = () => {
@@ -38,7 +42,6 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
 
       console.log('Initializing BioDigital Human...')
       console.log('API Key present:', !!apiKey)
-      console.log('API Key (first 10 chars):', apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING')
 
       if (!apiKey || apiKey === 'your_biodigital_key_here') {
         setError('BioDigital API key not configured')
@@ -49,48 +52,23 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
       }
 
       // Check if HumanAPI is available
-      if (!window.HumanAPI) {
+      if (!window.HumanAPI || !window.HumanAPI.Human) {
         setError('BioDigital Human API not loaded')
         setIsLoading(false)
-        setDebugInfo('HumanAPI script not found. Check your internet connection.')
-        console.error('window.HumanAPI is not defined')
+        setDebugInfo('HumanAPI.Human constructor not found. Check if script loaded correctly.')
+        console.error('window.HumanAPI.Human is not defined')
         return
       }
 
-      console.log('Creating HumanAPI instance...')
+      console.log('Creating HumanAPI.Human instance...')
 
-      // Initialize BioDigital Human with proper configuration
-      // Try both window.Human and window.HumanAPI
-      const HumanConstructor = window.Human || window.HumanAPI
-      
-      if (!HumanConstructor) {
-        setError("BioDigital Human API not available")
-        setIsLoading(false)
-        setDebugInfo("Neither window.Human nor window.HumanAPI found after script loaded")
-        console.error("No Human constructor found")
-        return
-      }
-      
-      console.log("Using constructor:", HumanConstructor.name || "Unknown")
-      
-      const human = new HumanConstructor({
-        containerId: 'biodigital-iframe',
-        key: apiKey,
-        // Use a default model to ensure something loads
-        modelId: 'production/maleAdult/male_adult_001',
-        background: '#1a1a2e',
-        ui: {
-          info: true,
-          help: false,
-          fullscreen: true,
-          zoom: true,
-          annotations: true,
-        },
-      })
+      // Initialize using the correct method: pass iframe ID
+      const human = new window.HumanAPI.Human('biodigital-iframe')
 
-      console.log('HumanAPI instance created:', human)
+      console.log('HumanAPI.Human instance created:', human)
 
-      human.on('human.ready', () => {
+      // Listen for ready event (note: it's 'ready', not 'human.ready')
+      human.on('ready', () => {
         console.log('✓ BioDigital Human ready!')
         humanRef.current = human
         setIsLoading(false)
@@ -117,10 +95,6 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
         }
       })
 
-      human.on('timeline.error', (err) => {
-        console.error('Timeline error:', err)
-      })
-
     } catch (err) {
       console.error('Error initializing BioDigital:', err)
       setError('Failed to initialize viewer')
@@ -136,6 +110,14 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
       console.log('BioDigital Human exposed to window.biodigitalHuman')
     }
   }, [humanRef.current])
+
+  // Get the iframe src with model and API key
+  const getIframeSrc = () => {
+    const apiKey = import.meta.env.VITE_BIODIGITAL_API_KEY
+    const modelId = 'production/maleAdult/male_adult_001'
+
+    return `https://human.biodigital.com/widget/?m=${modelId}&dk=${apiKey}&ui-info=true&ui-zoom=true&ui-annotations=true&background=1a1a2e`
+  }
 
   return (
     <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">
@@ -180,7 +162,7 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
                 setError(null)
                 setIsLoading(true)
                 setDebugInfo('')
-                initializeBioDigital()
+                setTimeout(() => initializeBioDigital(), 500)
               }}
               className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
             >
@@ -190,11 +172,13 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
         </div>
       )}
 
-      <div
+      {/* The iframe that hosts the BioDigital widget */}
+      <iframe
         id="biodigital-iframe"
-        ref={iframeRef}
-        className="w-full h-full"
+        src={getIframeSrc()}
+        className="w-full h-full border-0"
         style={{ minHeight: '600px' }}
+        allow="fullscreen"
       />
     </div>
   )

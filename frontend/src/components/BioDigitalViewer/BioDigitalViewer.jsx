@@ -7,26 +7,38 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
   const [debugInfo, setDebugInfo] = useState('')
 
   useEffect(() => {
-    // Using plain iframe mode - no JavaScript SDK needed
-    // User's library models only work with /viewer/ + uaid/paid auth
-    // JavaScript SDK requires /widget/ + dk= which doesn't access user's library
-    console.log('BioDigital viewer loading in iframe mode (no SDK)')
-    console.log('Model will be interactive but without programmatic control')
+    // Wait for HumanAPI script to load
+    const checkAndInitialize = () => {
+      if (window.HumanAPI) {
+        initializeBioDigital()
+      } else {
+        // Wait for script to load
+        const checkHumanAPI = setInterval(() => {
+          if (window.HumanAPI) {
+            clearInterval(checkHumanAPI)
+            initializeBioDigital()
+          }
+        }, 100)
 
-    // Give iframe time to load
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-      setError(null)
-      console.log('✓ BioDigital viewer loaded (iframe mode)')
-    }, 3000)
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkHumanAPI)
+          if (!window.HumanAPI) {
+            setError('BioDigital Human API script failed to load')
+            setIsLoading(false)
+            setDebugInfo('Make sure you have internet connection and the script can load')
+          }
+        }, 10000)
+      }
+    }
 
-    return () => clearTimeout(timer)
+    // Small delay to ensure iframe is rendered
+    setTimeout(checkAndInitialize, 500)
   }, [])
 
   const initializeBioDigital = () => {
     try {
-      console.log('Initializing BioDigital Human...')
-      console.log('Using user account authentication (uaid/paid)')
+      console.log('Initializing BioDigital Human using documentation format...')
 
       // Check if HumanAPI is available
       if (!window.HumanAPI) {
@@ -37,14 +49,14 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
         return
       }
 
-      console.log('Creating HumanAPI.Human instance...')
+      console.log('Creating HumanAPI instance (docs format)...')
 
-      // Initialize using the correct method: pass iframe ID
+      // Initialize EXACTLY as shown in documentation
       const human = new window.HumanAPI('biodigital-iframe')
 
-      console.log('HumanAPI.Human instance created:', human)
+      console.log('HumanAPI instance created:', human)
 
-      // Listen for ready event (note: it's 'ready', not 'human.ready')
+      // Listen for ready event as shown in docs
       human.on('ready', () => {
         console.log('✓ BioDigital Human ready!')
         humanRef.current = human
@@ -88,17 +100,16 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
     }
   }, [humanRef.current])
 
-  // Get the iframe src with user's library model
+  // Get the iframe src EXACTLY as shown in BioDigital documentation
   const getIframeSrc = () => {
-    // Use YOUR library model with uaid/paid authentication
-    // Developer key doesn't access your library - only public models (which don't work)
-    const modelId = '6csR'  // Your model from library
-    const uaid = 'ML3N5'    // User account ID
-    const paid = 'o_22e32b94'  // Partner account ID
+    // Using PUBLIC model with developer key as shown in official docs
+    // Format from: https://developer.biodigital.com/docs/widget/guides/manipulation
+    const modelId = 'production/maleAdult/male_system_anatomy_skeletal_09'  // Public model from docs
+    const developerKey = 'c0c3685a4e0996e0095ae1a7d7cb46079b9db70a'
 
-    // Use /viewer/ endpoint - no SDK, but displays your model
-    const url = `https://human.biodigital.com/viewer/?id=${modelId}&uaid=${uaid}&paid=${paid}&ui-info=true&ui-nav=true&ui-tools=true&ui-layers=true&ui-menu=true&ui-search=true&initial.none=true`
-    console.log('BioDigital iframe URL (viewer mode):', url)
+    // EXACT format from documentation: /viewer?id=MODEL&dk=KEY (no slash after viewer)
+    const url = `https://human.biodigital.com/viewer?id=${modelId}&ui-info=true&ui-menu=true&ui-nav=true&ui-tools=true&dk=${developerKey}`
+    console.log('BioDigital iframe URL (docs format):', url)
     return url
   }
 

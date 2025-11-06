@@ -1,0 +1,125 @@
+{
+  "models": [
+    {
+      "id": "neck_shoulders_upper_back",
+      "name": "Neck, Shoulders & Upper Back",
+      "biodigitalUrl": "https://human.biodigital.com/viewer/?id=6cr6&ui-anatomy-descriptions=true&ui-anatomy-pronunciations=true&ui-anatomy-labels=true&ui-audio=true&ui-chapter-list=false&ui-fullscreen=true&ui-help=true&ui-info=true&ui-label-list=true&ui-layers=true&ui-skin-layers=true&ui-loader=circle&ui-media-controls=full&ui-menu=true&ui-nav=true&ui-search=true&ui-tools=true&ui-tutorial=false&ui-undo=true&ui-whiteboard=true&initial.none=true&disable-scroll=false&uaid=ML3xE&paid=o_22e32b94",
+      "description": "Detailed anatomy of the neck, shoulder, and upper back region showing muscles, bones, and connective tissues",
+      "viewpoints": [
+        {
+          "id": "front",
+          "name": "Front View",
+          "buttonLabel": "Front View",
+          "camera": {
+            "position": { "x": 1.52, "y": 161.48, "z": -62.83 },
+            "target": { "x": 1.03, "y": 158.82, "z": -15.39 }
+          },
+          "anatomyVisible": {
+            "muscles": ["Sternocleidomastoid", "Trapezius (anterior)", "Deltoid (anterior)", "Pectoralis major (upper)"],
+            "bones": ["Clavicle", "Sternum", "Cervical vertebrae", "Scapula"],
+            "regions": ["Neck (anterior)", "Shoulders", "Upper chest"]
+          },
+          "description": "Frontal view of the neck and shoulder region showing anterior muscles and bone structure",
+          "clinicalContext": "Essential for understanding neck tension, forward head posture, and anterior shoulder pain.",
+          "commonUseCases": [
+            "Diagnosing tech neck and forward head posture",
+            "Understanding TMJ (jaw) pain referral patterns",
+            "Identifying anterior shoulder impingement"
+          ]
+        },
+        {
+          "id": "right_shoulder",
+          "name": "Right Shoulder",
+          "buttonLabel": "Right Shoulder",
+          "camera": {
+            "position": { "x": 43.13, "y": 157.51, "z": 17.08 },
+            "target": { "x": -6.15, "y": 155.61, "z": 1.95 }
+          },
+          "anatomyVisible": {
+            "muscles": ["Deltoid", "Rotator cuff muscles", "Trapezius", "Supraspinatus", "Infraspinatus"],
+            "bones": ["Scapula", "Humerus", "Clavicle"],
+            "regions": ["Right shoulder joint", "Shoulder girdle"]
+          },
+          "description": "Lateral view of the right shoulder showing rotator cuff",
+          "clinicalContext": "Critical for diagnosing rotator cuff injuries and shoulder impingement.",
+          "commonUseCases": [
+            "Rotator cuff tear assessment",
+            "Shoulder impingement syndrome diagnosis"
+          ]
+        },
+        {
+          "id": "back",
+          "name": "Back of Shoulder and Neck",
+          "buttonLabel": "Back View",
+          "camera": {
+            "position": { "x": -3.45, "y": 149.66, "z": 62.83 },
+            "target": { "x": 1.04, "y": 152.04, "z": 10.25 }
+          },
+          "anatomyVisible": {
+            "muscles": ["Trapezius (upper, middle, lower)", "Levator scapulae", "Rhomboids", "Latissimus dorsi (upper)"],
+            "bones": ["Scapulae", "Cervical vertebrae", "Thoracic vertebrae (upper)"],
+            "regions": ["Upper back", "Posterior neck", "Shoulder blades"]
+          },
+          "description": "Posterior view highlighting upper back muscles and neck extensors",
+          "clinicalContext": "Most relevant for addressing upper back tension, neck knots, and scapular winging.",
+          "commonUseCases": [
+            "Treating chronic neck knots and tension headaches",
+            "Correcting rounded shoulder posture"
+          ]
+        },
+        {
+          "id": "left_shoulder",
+          "name": "Left Shoulder",
+          "buttonLabel": "Left Shoulder",
+          "camera": {
+            "position": { "x": -43.28, "y": 156.10, "z": 15.81 },
+            "target": { "x": 7.69, "y": 152.03, "z": 2.56 }
+          },
+          "anatomyVisible": {
+            "muscles": ["Deltoid", "Rotator cuff muscles", "Trapezius"],
+            "bones": ["Scapula", "Humerus", "Clavicle"],
+            "regions": ["Left shoulder joint", "Shoulder girdle"]
+          },
+          "description": "Lateral view of the left shoulder",
+          "clinicalContext": "Mirror view for comparing bilateral shoulder anatomy.",
+          "commonUseCases": [
+            "Comparing left vs right shoulder",
+            "Bilateral rotator cuff assessment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skeletal_system",
+      "name": "Male Skeletal System",
+      "biodigitalUrl": "https://human.biodigital.com/viewer/?id=production/maleAdult/male_system_anatomy_skeletal_09&ui-info=true&dk=c0c3685a4e0996e0095ae1a7d7cb46079b9db70a",
+      "description": "Complete skeletal system showing all major bones",
+      "viewpoints": [
+        {
+          "id": "front",
+          "name": "Front View",
+          "buttonLabel": "Front View",
+          "camera": {
+            "position": { "x": -0.98, "y": 83.22, "z": -196.40 },
+            "target": { "x": -0.98, "y": 83.22, "z": -16.40 }
+          },
+          "anatomyVisible": {
+            "bones": ["Skull", "Clavicle", "Sternum", "Ribs", "Pelvis", "Femur"],
+            "regions": ["Cranium", "Thorax", "Upper limbs", "Lower limbs"]
+          },
+          "description": "Full frontal view of skeletal system",
+          "clinicalContext": "Essential for identifying bone structures and assessing symmetry.",
+          "commonUseCases": [
+            "Learning basic skeletal anatomy",
+            "Identifying fractures"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2025-11-06",
+    "description": "Database of anatomical models with AI-navigable viewpoints"
+  }
+}

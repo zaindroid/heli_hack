@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BioDigitalViewer from '../BioDigitalViewer/BioDigitalViewer'
 import VoiceInterface from '../VoiceInterface/VoiceInterface'
@@ -9,6 +9,19 @@ function PatientMode() {
   const [human, setHuman] = useState(null)
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [isVoiceActive, setIsVoiceActive] = useState(false)
+  const [currentModel, setCurrentModel] = useState(null)
+
+  // Watch for model switching from AI
+  useEffect(() => {
+    const checkModelChange = setInterval(() => {
+      if (window.currentAnatomyModel && window.currentAnatomyModel !== currentModel) {
+        console.log('Switching to new model:', window.currentAnatomyModel.name)
+        setCurrentModel(window.currentAnatomyModel)
+      }
+    }, 500)
+
+    return () => clearInterval(checkModelChange)
+  }, [currentModel])
 
   const handleHumanReady = (humanInstance) => {
     setHuman(humanInstance)
@@ -55,8 +68,17 @@ function PatientMode() {
         <div className="bg-white rounded-lg shadow-lg p-4">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             3D Anatomy Explorer
+            {currentModel && (
+              <span className="ml-2 text-sm font-normal text-blue-600">
+                ({currentModel.name})
+              </span>
+            )}
           </h2>
-          <BioDigitalViewer onHumanReady={handleHumanReady} mode="patient" />
+          <BioDigitalViewer
+            onHumanReady={handleHumanReady}
+            mode="patient"
+            currentModel={currentModel}
+          />
         </div>
 
         {/* Right: Chat & Info Panel */}

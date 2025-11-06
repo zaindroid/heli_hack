@@ -117,8 +117,35 @@ function VoiceInterface({ human, mode, onVoiceStateChange }) {
         setIsSpeaking(false)
         break
 
+      case 'load_model':
+        // AI is loading a new anatomy model
+        console.log('AI loading model:', data.model.name)
+        addMessage('system', `Loading ${data.model.name}...`)
+        executeLoadModel(data.model)
+        break
+
+      case 'camera_navigate':
+        // AI is navigating camera to viewpoint
+        console.log('AI navigating to viewpoint:', data.viewpoint_name)
+        addMessage('system', `Showing ${data.viewpoint_name}: ${data.explanation}`)
+        executeCameraNavigation(data.camera)
+        break
+
+      case 'highlight_muscles':
+        // AI is highlighting muscle group
+        console.log('AI highlighting muscles:', data.muscles)
+        addMessage('system', `Highlighting: ${data.explanation}`)
+        executeHighlightMuscles(data.muscles)
+        break
+
+      case 'highlight_muscle':
+        // AI is highlighting single muscle
+        console.log('AI highlighting muscle:', data.muscle)
+        executeHighlightMuscle(data.muscle)
+        break
+
       case 'anatomy_control':
-        // AI is controlling the 3D model
+        // Legacy anatomy control (backward compatibility)
         if (human) {
           executeAnatomyControl(data.action, data.params)
         }
@@ -133,6 +160,42 @@ function VoiceInterface({ human, mode, onVoiceStateChange }) {
     }
   }
 
+  // New execution functions using window.biodigitalControls
+  const executeLoadModel = (model) => {
+    // Trigger model loading through parent component
+    // This will need to be passed down as a prop
+    if (window.biodigitalControls) {
+      console.log('Model loading would trigger reload with:', model.biodigitalUrl)
+      // Note: Model switching requires iframe reload, handled in PatientMode
+      window.currentAnatomyModel = model
+    }
+  }
+
+  const executeCameraNavigation = (camera) => {
+    if (window.biodigitalControls) {
+      window.biodigitalControls.navigateToViewpoint(camera)
+    } else {
+      console.error('BioDigital controls not available')
+    }
+  }
+
+  const executeHighlightMuscles = (muscles) => {
+    if (window.biodigitalControls) {
+      window.biodigitalControls.highlightMuscles(muscles)
+    } else {
+      console.error('BioDigital controls not available')
+    }
+  }
+
+  const executeHighlightMuscle = (muscle) => {
+    if (window.biodigitalControls) {
+      window.biodigitalControls.highlightMuscle(muscle)
+    } else {
+      console.error('BioDigital controls not available')
+    }
+  }
+
+  // Legacy anatomy control (backward compatibility)
   const executeAnatomyControl = async (action, params) => {
     if (!human) return
 

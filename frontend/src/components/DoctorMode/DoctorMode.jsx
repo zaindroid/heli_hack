@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BioDigitalViewer from '../BioDigitalViewer/BioDigitalViewer'
 import VoiceInterface from '../VoiceInterface/VoiceInterface'
@@ -8,12 +8,25 @@ function DoctorMode() {
   const navigate = useNavigate()
   const [human, setHuman] = useState(null)
   const [patientFiles, setPatientFiles] = useState([])
+  const [currentModel, setCurrentModel] = useState(null)
   const [patientInfo, setPatientInfo] = useState({
     name: '',
     age: '',
     gender: '',
     history: '',
   })
+
+  // Watch for model switching from AI
+  useEffect(() => {
+    const checkModelChange = setInterval(() => {
+      if (window.currentAnatomyModel && window.currentAnatomyModel !== currentModel) {
+        console.log('Switching to new model:', window.currentAnatomyModel.name)
+        setCurrentModel(window.currentAnatomyModel)
+      }
+    }, 500)
+
+    return () => clearInterval(checkModelChange)
+  }, [currentModel])
 
   const handleHumanReady = (humanInstance) => {
     setHuman(humanInstance)
@@ -158,8 +171,17 @@ function DoctorMode() {
         <div className="bg-white rounded-lg shadow-lg p-4">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Advanced 3D Anatomy & Surgical Planning
+            {currentModel && (
+              <span className="ml-2 text-sm font-normal text-green-600">
+                ({currentModel.name})
+              </span>
+            )}
           </h2>
-          <BioDigitalViewer onHumanReady={handleHumanReady} mode="doctor" />
+          <BioDigitalViewer
+            onHumanReady={handleHumanReady}
+            mode="doctor"
+            currentModel={currentModel}
+          />
         </div>
 
         {/* Right: AI Assistant */}

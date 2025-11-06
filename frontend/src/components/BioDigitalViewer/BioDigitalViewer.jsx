@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
-function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
+function BioDigitalViewer({ onHumanReady, mode = 'patient', currentModel = null }) {
   const humanRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [debugInfo, setDebugInfo] = useState('')
+  const [loadedModel, setLoadedModel] = useState(null)
 
   useEffect(() => {
     // Using public model with developer key for SDK access
@@ -89,26 +90,98 @@ function BioDigitalViewer({ onHumanReady, mode = 'patient' }) {
     }
   }
 
-  // Expose methods for AI control
+  // Handle model switching when currentModel prop changes
   useEffect(() => {
-    if (humanRef.current && window) {
-      window.biodigitalHuman = humanRef.current
-      console.log('BioDigital Human exposed to window.biodigitalHuman')
+    if (currentModel && loadedModel !== currentModel.id) {
+      console.log('Switching to model:', currentModel.name)
+      setLoadedModel(currentModel.id)
+      setIsLoading(true)
+
+      // Reload iframe with new model
+      const iframe = document.getElementById('biodigital-iframe')
+      if (iframe) {
+        iframe.src = getIframeSrc()
+      }
     }
-  }, [humanRef.current])
+  }, [currentModel])
 
-  // Get the iframe src with PUBLIC model and developer key for SDK access
+  // Get the iframe src with user's library model and uaid/paid authentication
   const getIframeSrc = () => {
-    // Using PUBLIC model with developer key (enables JavaScript SDK)
-    // This is the format from documentation that gives full SDK control
-    const modelId = 'production/maleAdult/male_system_anatomy_skeletal_09'
-    const developerKey = 'c0c3685a4e0996e0095ae1a7d7cb46079b9db70a'
+    // Use provided model or default to neck/shoulders model
+    const modelId = currentModel?.id || '6cr6'  // User's neck, shoulders & upper back model
 
-    // Format from BioDigital docs: /viewer?id=MODEL&dk=KEY (note: NO slash after viewer)
-    const url = `https://human.biodigital.com/viewer?id=${modelId}&ui-info=true&ui-menu=true&ui-nav=true&ui-tools=true&ui-layers=true&dk=${developerKey}`
-    console.log('BioDigital iframe URL (public model + SDK):', url)
+    // User's authentication credentials for library models
+    const uaid = 'ML3xE'
+    const paid = 'o_22e32b94'
+
+    // Format: /viewer/?id=MODEL&uaid=X&paid=Y (works with SDK as shown in user's test.html)
+    const url = `https://human.biodigital.com/viewer/?id=${modelId}&ui-anatomy-descriptions=true&ui-anatomy-pronunciations=true&ui-anatomy-labels=true&ui-audio=true&ui-chapter-list=false&ui-fullscreen=true&ui-help=true&ui-info=true&ui-label-list=true&ui-layers=true&ui-skin-layers=true&ui-loader=circle&ui-media-controls=full&ui-menu=true&ui-nav=true&ui-search=true&ui-tools=true&ui-tutorial=false&ui-undo=true&ui-whiteboard=true&initial.none=true&disable-scroll=false&uaid=${uaid}&paid=${paid}`
+
+    console.log('BioDigital iframe URL (library model):', url)
     return url
   }
+
+  // Camera navigation function (from user's test.html pattern)
+  const navigateToViewpoint = (camera) => {
+    if (!humanRef.current) {
+      console.error('Human API not initialized')
+      return
+    }
+
+    humanRef.current.send('camera.set', {
+      position: camera.position,
+      target: camera.target,
+      animate: true,
+      duration: 1000
+    })
+  }
+
+  // Highlight single muscle (from user's test.html pattern)
+  const highlightMuscle = (muscleName) => {
+    if (!humanRef.current) {
+      console.error('Human API not initialized')
+      return
+    }
+
+    console.log('Highlighting muscle:', muscleName)
+
+    // Show and select the muscle
+    humanRef.current.send('object.show', { objectId: muscleName })
+    humanRef.current.send('object.select', { objectId: muscleName, replace: false })
+    humanRef.current.send('object.setOpacity', { objectId: muscleName, opacity: 1.0 })
+
+    // Make it red to highlight
+    humanRef.current.send('object.setMaterial', {
+      objectId: muscleName,
+      material: {
+        diffuse: { r: 1.0, g: 0.0, b: 0.0 }
+      }
+    })
+  }
+
+  // Highlight multiple muscles
+  const highlightMuscles = (muscleNames) => {
+    if (!Array.isArray(muscleNames)) {
+      muscleNames = [muscleNames]
+    }
+
+    muscleNames.forEach(muscle => {
+      highlightMuscle(muscle)
+    })
+  }
+
+  // Expose control methods
+  useEffect(() => {
+    if (humanRef.current) {
+      window.biodigitalControls = {
+        human: humanRef.current,
+        navigateToViewpoint,
+        highlightMuscle,
+        highlightMuscles
+      }
+      console.log('BioDigital controls exposed to window.biodigitalControls')
+    }
+  }, [humanRef.current])
 
   return (
     <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">

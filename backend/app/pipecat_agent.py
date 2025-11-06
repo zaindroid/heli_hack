@@ -7,6 +7,7 @@ import os
 import json
 import logging
 from typing import Optional
+from pathlib import Path
 from openai import AsyncOpenAI
 
 logger = logging.getLogger(__name__)
@@ -14,78 +15,98 @@ logger = logging.getLogger(__name__)
 # Initialize OpenAI client
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Load anatomy database
+ANATOMY_DB_PATH = Path(__file__).parent / "anatomy_data.json"
+with open(ANATOMY_DB_PATH, 'r') as f:
+    ANATOMY_DATABASE = json.load(f)
 
-# Anatomy control tools for function calling
+
+# Anatomy control tools for function calling - based on user's database
 ANATOMY_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "navigate_to_organ",
-            "description": "Navigate the 3D anatomy viewer to a specific organ or body part",
+            "name": "load_anatomy_model",
+            "description": "Load a specific 3D anatomy model. Available models: 'neck_shoulders_upper_back' (for neck pain, shoulder issues), 'skeletal_system' (for bone structure)",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "organ_id": {
+                    "model_id": {
                         "type": "string",
-                        "description": "The ID of the organ to navigate to (e.g., 'heart', 'lungs', 'liver', 'brain')"
+                        "description": "The ID of the model to load",
+                        "enum": ["neck_shoulders_upper_back", "skeletal_system"]
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Why this model is relevant to the conversation"
+                    }
+                },
+                "required": ["model_id", "reason"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "navigate_to_viewpoint",
+            "description": "Move camera to a specific anatomical viewpoint. For neck model: 'front', 'back', 'left_shoulder', 'right_shoulder'. For skeletal: 'front', 'side', 'head', 'legs'",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "model_id": {
+                        "type": "string",
+                        "description": "The current model ID",
+                        "enum": ["neck_shoulders_upper_back", "skeletal_system"]
+                    },
+                    "viewpoint_id": {
+                        "type": "string",
+                        "description": "The viewpoint to navigate to (e.g., 'front', 'back', 'left_shoulder', 'right_shoulder')"
                     },
                     "explanation": {
                         "type": "string",
-                        "description": "Brief explanation of why navigating to this organ"
+                        "description": "Explain why showing this view"
                     }
                 },
-                "required": ["organ_id", "explanation"]
+                "required": ["model_id", "viewpoint_id", "explanation"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "zoom_anatomy",
-            "description": "Zoom in or out on the 3D anatomy model",
+            "name": "highlight_muscle_group",
+            "description": "Highlight a group of muscles for pain areas. Available groups: 'neck_knots' (trapezius, levator scapulae), 'shoulder_pain' (rotator cuff), 'upper_back' (trapezius, rhomboids)",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "level": {
-                        "type": "number",
-                        "description": "Zoom level (1-5, where 1 is furthest, 5 is closest)"
-                    }
-                },
-                "required": ["level"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "highlight_structure",
-            "description": "Highlight a specific anatomical structure in the 3D model",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "structure_id": {
+                    "group_id": {
                         "type": "string",
-                        "description": "The ID of the structure to highlight"
+                        "description": "The muscle group to highlight",
+                        "enum": ["neck_knots", "shoulder_pain", "upper_back"]
+                    },
+                    "explanation": {
+                        "type": "string",
+                        "description": "Why highlighting these muscles"
                     }
                 },
-                "required": ["structure_id"]
+                "required": ["group_id", "explanation"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "play_animation",
-            "description": "Play a built-in animation showing a biological process",
+            "name": "highlight_custom_muscle",
+            "description": "Highlight a specific muscle by name (e.g., 'left trapezius', 'right deltoid', 'sternocleidomastoid')",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "animation_name": {
+                    "muscle_name": {
                         "type": "string",
-                        "description": "Name of the animation (e.g., 'blood_flow', 'breathing', 'digestion')"
+                        "description": "Name of the muscle to highlight"
                     }
                 },
-                "required": ["animation_name"]
+                "required": ["muscle_name"]
             }
         }
     }
@@ -186,37 +207,84 @@ surgical planning. Provide detailed, professional medical information."""
             return f"I apologize, I encountered an error: {str(e)}"
 
     async def send_anatomy_control(self, websocket, function_name, args):
-        """Send anatomy control command to frontend"""
+        """Send anatomy control command to frontend based on anatomy database"""
 
-        # Map function names to frontend actions
-        action_map = {
-            "navigate_to_organ": "navigate_to",
-            "zoom_anatomy": "zoom",
-            "highlight_structure": "highlight",
-            "play_animation": "play_animation"
-        }
+        try:
+            if function_name == "load_anatomy_model":
+                # Find model in database
+                model_id = args.get("model_id")
+                model_data = next(
+                    (m for m in ANATOMY_DATABASE["models"] if m["id"] == model_id),
+                    None
+                )
 
-        action = action_map.get(function_name)
-        if not action:
-            return
+                if model_data:
+                    logger.info(f"Loading model: {model_data['name']}")
+                    await websocket.send_json({
+                        "type": "load_model",
+                        "model": model_data,
+                        "reason": args.get("reason")
+                    })
 
-        # Prepare parameters based on function
-        params = {}
-        if function_name == "navigate_to_organ":
-            params = {"organId": args.get("organ_id")}
-        elif function_name == "zoom_anatomy":
-            params = {"level": args.get("level")}
-        elif function_name == "highlight_structure":
-            params = {"structureId": args.get("structure_id")}
-        elif function_name == "play_animation":
-            params = {"animationName": args.get("animation_name")}
+            elif function_name == "navigate_to_viewpoint":
+                # Find viewpoint in database
+                model_id = args.get("model_id")
+                viewpoint_id = args.get("viewpoint_id")
 
-        # Send to frontend
-        await websocket.send_json({
-            "type": "anatomy_control",
-            "action": action,
-            "params": params
-        })
+                model = next(
+                    (m for m in ANATOMY_DATABASE["models"] if m["id"] == model_id),
+                    None
+                )
+
+                if model:
+                    viewpoint = next(
+                        (v for v in model["viewpoints"] if v["id"] == viewpoint_id),
+                        None
+                    )
+
+                    if viewpoint:
+                        logger.info(f"Navigating to viewpoint: {viewpoint['name']}")
+                        await websocket.send_json({
+                            "type": "camera_navigate",
+                            "camera": viewpoint["camera"],
+                            "viewpoint_name": viewpoint["name"],
+                            "explanation": args.get("explanation")
+                        })
+
+            elif function_name == "highlight_muscle_group":
+                # Define muscle groups based on anatomy database
+                muscle_groups = {
+                    "neck_knots": ["Trapezius", "Levator scapulae", "Sternocleidomastoid"],
+                    "shoulder_pain": ["Deltoid", "Supraspinatus", "Infraspinatus", "Rotator cuff muscles"],
+                    "upper_back": ["Trapezius", "Rhomboids", "Latissimus dorsi"]
+                }
+
+                group_id = args.get("group_id")
+                muscles = muscle_groups.get(group_id, [])
+
+                logger.info(f"Highlighting muscle group: {group_id}")
+                await websocket.send_json({
+                    "type": "highlight_muscles",
+                    "muscles": muscles,
+                    "group_id": group_id,
+                    "explanation": args.get("explanation")
+                })
+
+            elif function_name == "highlight_custom_muscle":
+                muscle_name = args.get("muscle_name")
+
+                logger.info(f"Highlighting muscle: {muscle_name}")
+                await websocket.send_json({
+                    "type": "highlight_muscle",
+                    "muscle": muscle_name
+                })
+
+        except Exception as e:
+            logger.error(f"Error sending anatomy control: {e}")
+            await websocket.send_json({
+                "type": "error",
+                "message": f"Failed to control anatomy: {str(e)}"
+            })
 
     def add_patient_context(self, context: dict):
         """Add patient information or medical reports to context"""
